@@ -60,14 +60,19 @@
             <input type="text" id="shou_name" class="form-control" placeholder="XX市XX房地产估价公司" aria-describedby="basic-addon1">
           </div>
 
+          <div class="input-group" style="margin-top:20px">
+            <span class="input-group-addon">估价对象</span>
+            <input type="text" id="ob_des" class="form-control" placeholder="这里粗略描述估价对象" aria-describedby="basic-addon1">
+          </div>
+
           <button style="margin-top:20px" class="btn btn-warning" type="button">
-            估价目的 <span class="badge">第一部分</span>
+            估价目的 <span class="badge">总述</span>
           </button>
 
           <textarea style="margin-top:20px" class="form-control " rows="6" id="aim" placeholder="这里描述委托方评估该地块的估价目的"></textarea>
 
           <button style="margin-top:20px" class="btn btn-warning" type="button">
-            估价依据 <span class="badge">第一部分</span>
+            估价依据 <span class="badge">总述</span>
           </button>
 
           <textarea style="margin-top:20px" class="form-control " rows="6" id="accord" placeholder="这里描述委托方评估该地块的估价依据"></textarea>
@@ -113,22 +118,10 @@
           <div class="alert alert-info" style="margin-top:20px">估价对象描述及地价影响因素分析</div>
 
           <button class="btn btn-danger" type="button">
-            土地登记状况 <span class="badge">估价对象描述</span>
+            估价对象描述
           </button>
 
-          <textarea style="margin-top:20px" class="form-control " rows="6" id="register" placeholder="这里描述土地登记状况"></textarea>
- 
-          <button style="margin-top:20px" class="btn btn-danger" type="button">
-            土地权利状况 <span class="badge">估价对象描述</span>
-          </button>
-
-          <textarea style="margin-top:20px" class="form-control " rows="6" id="right" placeholder="这里描述土地权利状况"></textarea>
-          
-          <button style="margin-top:20px" class="btn btn-danger" type="button">
-            土地利用状况 <span class="badge">估价对象描述</span>
-          </button>
-
-          <textarea style="margin-top:20px" class="form-control " rows="6" id="land_use" placeholder="这里描述土地利用状况"></textarea>
+          <textarea style="margin-top:20px" class="form-control " rows="6" id="land_des" placeholder="这里描述估价对象"></textarea>
           
           <div class="input-group" style="margin-top:20px">
             <span class="input-group-addon">一般因素</span>
@@ -162,6 +155,10 @@
           </button>
 
           <textarea style="margin-top:20px" class="form-control " rows="6" id="price_final_res" placeholder="这里描述本项目地价的确定方法和估价结果"></textarea>
+
+          <div class="alert alert-info" style="margin-top:20px">附件</div>
+
+          <textarea style="margin-top:20px" class="form-control " rows="10" id="appendix" placeholder="这里放置一些附件信息"></textarea>
           
           <div class="alert alert-info" style="margin-top:20px">估价报告自动纠错</div>
 
@@ -191,6 +188,7 @@
            document.getElementById("pname").value=null;
            document.getElementById("wei_name").value=null;
            document.getElementById("shou_name").value=null;
+           document.getElementById("ob_des").value=null;
            document.getElementById("aim").value=null;
            document.getElementById("accord").value=null;
            document.getElementById("base_day").value=null;
@@ -202,9 +200,7 @@
            document.getElementById("stamp").value=null;
 
            //估价对象描述及地价影响因素分析的估价信息
-           document.getElementById("register").value=null;
-           document.getElementById("right").value=null;
-           document.getElementById("land_use").value=null;
+           document.getElementById("land_des").value=null;
            document.getElementById("general_effect").value=null;
            document.getElementById("district_effect").value=null;
            document.getElementById("individual_effect").value=null;
@@ -213,6 +209,9 @@
            document.getElementById("principle").value=null;
            document.getElementById("way").value=null;
            document.getElementById("price_final_res").value=null;
+
+           //附件中的估价信息
+           document.getElementById("appendix").value=null;
 
            //提取自动纠错行
            document.getElementById("autos").value=null;
@@ -230,7 +229,7 @@
   
            var flag;
            //最初赋予flag为0，代表从总述开始
-           flag=0;
+           flag=-1;
            
            //估价报告自动纠错栏最开始设置为空
            var res;
@@ -248,14 +247,37 @@
            suppose=0;
            coef=0;
 
+           //估价方法中，是否对给出的方法提供了选择的依据
+           var way_no_accord;
+           way_no_accord=0;
+
+           //估价原则中所犯的一些错误
+           var prin_replace,prin_income;
+           prin_replace=0;
+           prin_income=0;
+
            //成本逼近法中的错误
-           var cost_cal_error,cost_tax_inc_error,invest_half_error,cost_profit_error,cost_land_inc;
+           var cost_cal_error,cost_tax_inc_error,invest_half_error,cost_profit_error,cost_land_inc,demolition_cost_error;
+           var demolition_current_cost_error,cost_social_average_demolition_dur,cost_interest_accord,inc_agreement_error;
+           var law_profit_error,delete_error,tax_fee_error,land_inc_error,cost_real_fee,cost_dev_accord,is_move;
            cost_cal_error=0;
            cost_tax_inc_error=0;
            invest_half_error=0;
            cost_profit_error=0;
            cost_land_inc=0;
            cost_year_jus=0;
+           demolition_cost_error=0;
+           demolition_current_cost_error=0;
+           cost_social_average_demolition_dur=0;
+           cost_interest_accord=0;
+           inc_agreement_error=0;
+           law_profit_error=0;
+           delete_error=0;
+           tax_fee_error=0;
+           land_inc_error=0;
+           cost_real_fee=0;
+           cost_dev_accord=0;
+           is_move=0;
 
            //基准地价系数修正法的错误
            var base_price_mean,base_year_jus,formu_correct,land_result_error;
@@ -264,15 +286,47 @@
            formu_correct=0;
            land_result_error=0;
 
+           //收益还原法中的错误
+           var compare_price_error,rent_price_accord,depreciation_house,tax_issue,com_reduc_accord,unit_land_price,income_house;
+           compare_price_error=0;
+           rent_price_accord=0;
+           depreciation_house=0;
+           tax_issue=0;
+           com_reduc_accord=0;
+           unit_land_price=0;
+           income_house=0;
+
+           //市场比较法中的错误
+           var market_compare,land_index_accord,compare_price_accord,material_index,is_market_price,transaction_error;
+           var is_use_dur_jus,dur_jus_cer,is_land_index;
+           market_compare=0;
+           land_index_accord=0;
+           compare_price_accord=0;
+           material_index=0;
+           is_market_price=0;
+           //交易情况错误
+           transaction_error=0;
+           is_use_dur_jus=0;
+           dur_jus_cer=0;
+           is_land_index=0;
+
+           var dist,only,effect_now,market_table;
+           var d_f,o_f;
+           d_f=0;
+           o_f=0;
+           market_table=0;
+
            //在总述中，估价依据的一些错误
            //看看是否包括土地估价技术规程
-           var is_guicheng;
+           var is_guicheng,is_land_cer,is_not_precise;
            is_guicheng=0;
+           is_land_cer=0;
+           is_not_precise=0;
 
            //在总述中，设置一些标志变量，看看已经获取到信息没有
-           var is_pname,is_wei_name,is_shou_name,is_aim,is_accord,is_base_day,is_sche_date;
-           var is_land_price_def,is_result,is_special_case,is_sign,is_stamp,is_register,is_right;
-           var is_land_use,is_principle,is_way,is_price_final_res;
+           var is_pname,is_wei_name,is_shou_name,is_aim,is_accord,is_base_day,is_sche_date,is_ob_des;
+           var is_land_price_def,is_result,is_special_case,is_sign,is_stamp;
+           var is_land_des,is_principle,is_way,is_price_final_res;
            is_pname=0;
            is_wei_name=0;
            is_shou_name=0;
@@ -285,24 +339,26 @@
            is_special_case=0;
            is_sign=0;
            is_stamp=0;
-           is_register=0;
-           is_right=0;
-           is_land_use=0;
+           is_land_des=0;
            is_principle=0;
            is_way=0;
            is_price_final_res=0;
+           is_ob_des=0;
 
-           var pname,wei_name,shou_name,aim,accord,base_day,sche_date;
-           var land_price_def,result,special_case,sign,stamp,register,right,land_use,principle;
+           var pname,wei_name,shou_name,ob_des,aim,accord,base_day,sche_date;
+           var land_price_def,result,special_case,sign,stamp,land_des,principle;
            var way,price_final_res;
 
-           //地价定义是否是清晰的
-           var land_price_clear;
+           //地价定义是否是清晰的，土地价格的权利是否有交代
+           var land_price_clear,land_price_right;
            land_price_clear=0;
+           land_price_right=0;
 
            //使用说明上，待估宗地的土地面积、土地权利状况及土地使用权年限等以当地规划管理部门核发的《国有土地使用证》为准
-           var special_case_use_ver;
+           //看看特别注意的事项是否都交代了
+           var special_case_use_ver,special_case_issue;
            special_case_use_ver=0;
+           special_case_issue=0;
 
            //使用说明上，要注意土地估价报告和技术报告，它们的归属是不一样的
            var land_paper_wei,land_tec_paper_man;
@@ -313,19 +369,54 @@
            var sign_col;
            sign_col=0;
 
-           //估价目的是否为划拨
-           var is_hua;
-           is_hua=0;
+           //看看土地估价机构盖章栏中，是否有估价机构负责人的签字
+           var stamp_sign;
+           stamp_sign=0;
 
-           //在地价的确定中，看看总地价是否大写了，看看是否有土地估价结果一览表
-           var capital_letter_error,land_price_result_table;
+           //看看估价目的是否有两个
+           var double_aim;
+           double_aim=0;
+
+           //在估价对象描述中，土地登记状况，土地权利状况和土地利用状况，这三者是否有混用，牛头不对马嘴的情况呢？
+           var land_sign,land_right,land_use;
+           land_sign=0;
+           land_right=0;
+           land_use=0;
+
+           //看看土地估价报告中是否为划拨地？是否为出让地？是否两者混用？
+           var is_hua,is_chu;
+           is_hua=0;
+           is_chu=0;
+
+           //在估价对象的描述中，看看土地级别，土地用途的信息是否有交代,看看四至是否有交代，他项权利是否交代
+           var land_level_func,land_four_dir,land_other_right;
+           land_level_func=0;
+           land_four_dir=0;
+           land_other_right=0;
+
+           //在估价对象的描述中，看看建筑物状况交代地是否详细
+           var is_construct_des,construct_des;
+           construct_des=0;
+           is_construct_des=0;
+
+           //在地价的确定中，看看总地价是否大写了，看看是否有土地估价结果一览表，看看地价的结果是否包括四大要素--土地面积，单位面积地价，总地价，楼面地价
+           var capital_letter_error,land_price_result_table,land_res_full,land_price_uniformity;
            capital_letter_error=0;
            land_price_result_table=0;
+           land_res_full=0;
+           land_price_uniformity=0;
 
-           //土地估价报告附件中，是否存在国有土地使用证复印件和估价对象的照片资料？
-           var land_use_ver,object_photo;
+           //土地估价报告附件中，是否存在国有土地使用证复印件和估价对象的照片资料，是否存在房屋产权证，估价对象位置示意图有没有
+           //估价机构有没有工商营业执照
+           var land_use_ver,object_photo,object_house_cer,object_location_photo,agent_business_cer;
            land_use_ver=0;
            object_photo=0;
+           object_house_cer=0;
+           object_location_photo=0;
+           agent_business_cer=0;
+
+           //附录的内容，也给一个保存项吧
+           var appendix;
 
            //提取出土地估价报告的内容
            var contact=document.getElementById("contact").value;
@@ -343,21 +434,45 @@
               if(str.indexOf("第一部分")>=0 || str.indexOf("第一部")>=0)
               {
                 flag=0;
+                //这里注意，第一部分后面应该写明总述，不然也是算错的
+                if(str.indexOf("总述")<0)
+                {
+                  res+="(" + pt + ")" + "第一部分后面应写上'总述'。" + "\n";
+                  pt=pt+1;
+                }
               }
 
               if(str.indexOf("第二部分")>=0)
               {
                 flag=1;
+                //这里注意，第二部分后面应该写明估价对象描述及地价影响因素分析，不然也是算错的
+                if(str.indexOf("估价对象描述及地价影响因素分析")<0)
+                {
+                  res+="(" + pt + ")" + "第二部分后面应该写上'估价对象描述及地价影响因素分析'。" + "\n";
+                  pt=pt+1;
+                }
               }
 
               if(str.indexOf("第三部分")>=0)
               {
                 flag=2;
+                //这里注意，第三部分后面应该写明估价对象描述及地价影响因素分析，不然也是算错的
+                if(str.indexOf("土地估价")<0)
+                {
+                  res+="(" + pt + ")" + "第二部分后面应该写上'土地估价'。" + "\n";
+                  pt=pt+1;
+                }
               }
 
-              if(str.indexOf("附件")>=0)
+              if(str.indexOf("第四部分")>=0)
               {
                 flag=3;
+                //这里注意，第四部分后面应该写上'附件'，不然也是算错的
+                if(str.indexOf("附件")<0 && str.indexOf("附 录")<0 && str.indexOf("附 件")<0 && str.indexOf("附录")<0)
+                {
+                  res+="(" + pt + ")" + "第四部分后面应该写上'附件'。" + "\n";
+                  pt=pt+1;
+                }
               }
               
               //看看目前土地估价技术报告中，处在哪个估价方法的使用上
@@ -371,6 +486,16 @@
                 now_way="base_price";
               }
 
+              if(str.indexOf("．市场比较法")>=0 || str.indexOf(")市场比较法")>=0)
+              {
+                now_way="market";
+              }
+
+              if(str.indexOf("．收益还原法")>=0 || str.indexOf(")收益还原法")>=0)
+              {
+                now_way="income";
+              }
+
               //总述部分的信息提取
               //估价项目名称的提取
               if(str.indexOf("估价项目名称")>=0 && flag==0 && is_pname==0)
@@ -378,8 +503,14 @@
                 document.getElementById("pname").value = msg_get(i,"、");
                 is_pname=1;
                 pname=document.getElementById("pname").value;
+                //估价项目名称太简短或不明确
+                if(pname.indexOf("地价评估")>=0 || pname.length<10)
+                {
+                  res+="(" + pt + ")" + "估价项目名称太简短或不明确。" + "\n";
+                  pt=pt+1;
+                }
                 //处理“略”的情况
-                if(pname.indexOf("略")>=0)
+                if(pname.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("pname").value="略";
                 }
@@ -392,7 +523,7 @@
                 is_wei_name=1;
                 wei_name=document.getElementById("wei_name").value;
                 //处理“略”的情况
-                if(wei_name.indexOf("略")>=0)
+                if(wei_name.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("wei_name").value="略";
                 }
@@ -405,9 +536,22 @@
                 is_shou_name=1;
                 shou_name=document.getElementById("shou_name").value;
                 //处理“略”的情况
-                if(shou_name.indexOf("略")>=0)
+                if(shou_name.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("shou_name").value="略";
+                }
+              }
+
+              //估价对象的提取
+              if(str.indexOf("估价对象")>=0 && flag==0 && is_ob_des==0)
+              {
+                document.getElementById("ob_des").value = msg_get(i,"、");
+                is_ob_des=1;
+                ob_des=document.getElementById("ob_des").value;
+                //处理“略”的情况
+                if(ob_des.indexOf("略")>=0 || str.indexOf("略")>=0)
+                {
+                  document.getElementById("ob_des").value="略";
                 }
               }
               
@@ -418,22 +562,63 @@
                 document.getElementById("aim").value = msg_get(i,"、估价依据");
                 is_aim=1;
                 aim=document.getElementById("aim").value;
-                //看看估价目的是否为划拨地
-                if(aim.indexOf("划拨")>=0)
+                //看看估价目的中说明了土地估价的应用方向没有
+                //出让(包括国有土地使用权招标、拍卖、挂牌出让价格评估)、转让、租赁、收回、收购储备、作价人股、清产核资等提供地价参考
+                if(aim.indexOf("出让")<0 && aim.indexOf("划拨")<0 && aim.indexOf("招标")<0 && aim.indexOf("拍卖")<0 && aim.indexOf("挂牌")<0)
                 {
-                  is_hua=1;
+                  if(aim.indexOf("转让")<0 && aim.indexOf("租赁")<0 && aim.indexOf("回收")<0 && aim.indexOf("储备")<0 && aim.indexOf("作价入股")<0)
+                  {
+                    if(aim.indexOf("核资")<0 && aim.indexOf("清偿")<0 && aim.indexOf("补偿")<0 && aim.indexOf("征收")<0 && aim.indexOf("清算")<0)
+                    {
+                      res+="(" + pt + ")" + "估价目的中没有说明土地估价的应用方向。" + "\n";
+                      pt=pt+1;
+                    }
+                  }
                 }
+                //看看估价目的是否为划拨地或出让地
+                if(aim.indexOf("划拨")>=0) is_hua=1;
+                if(aim.indexOf("出让")>=0) is_chu=1;
                 //处理“略”的情况
-                if(aim.indexOf("略")>=0)
+                if(aim.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("aim").value="略";
                 }
+                //看看同一份土地估价报告是否有两个估价目的，这也是常见的错误
+                if(aim.indexOf("同时")>=0 || aim.indexOf("也")>=0)
+                {
+                  double_aim=1;
+                }
+                //设定两个参数;
+                var a,b;
+                a=-1;
+                b=-1;
+                a=aim.indexOf("提供");
+                if(a>0) b=aim.indexOf("提供",a+1);
+                if(a>0 && b>0) double_aim=1;
+                //看看评估的是不是土地的市场价值，如果是的话，在后面的市场比较法中，是不需要做交易修正的
+                if(aim.indexOf("市场价格")>=0 || aim.indexOf("市场价值")>=0)
+                {
+                  is_market_price=1;
+                }
+                //alert(aim);
               }
-     
+
               //在第一部分中，对估价依据的提取
               if(str.indexOf("估价依据")>=0 && flag==0 && is_accord==0)
               {
-                document.getElementById("accord").value = msg_get(i,"、估价基准日");
+                //alert(str);
+                //由于估价依据后面可能存在不同的项目，所以这里需要做一下鲁棒性处理
+                var str1,str2,str3,strf;
+                str1 = msg_get(i,"、估价基准日");
+                str2 = msg_get(i,"、价格定义");
+                str3 = msg_get(i,"、地价定义");
+                if(str1.length) strf=str1;
+                if(str2.length) strf=str2;
+                if(str3.length) strf=str3;
+                if(strf.length>str1.length && strf && str1) strf=str1;
+                if(strf.length>str2.length && strf && str2) strf=str2;
+                if(strf.length>str3.length && strf && str3) strf=str3;
+                document.getElementById("accord").value=strf;
                 is_accord=1;
                 accord=document.getElementById("accord").value;
                 //这里处理估价依据中的相关错误
@@ -450,25 +635,36 @@
                   pt=pt+1;
                 }
                 //估价依据中，是否包括了土地估价技术规程
-                if(accord.indexOf("土地估价技术规程")>=0 && is_guicheng==0)
+                if((accord.indexOf("土地估价技术规程")>=0 || accord.indexOf("土地估价规程")>=0) && is_guicheng==0)
                 {
                   is_guicheng=1;
                 }
-                //处理“略”的情况
-                if(accord.indexOf("略")>=0)
+                //估价依据中，是否包括了估价对象土地证书或权属证明
+                if(accord.indexOf("土地证书")>=0 && accord.indexOf("权属证明")>=0 && is_land_cer==0)
+                {
+                  is_land_cer=1;
+                }
+                //估价依据中，“××省关于土地管理的法律、法规”提法太笼统，未说明与本次评估有关的法律、法规是哪些
+                if(accord.indexOf("关于")>=0 && accord.indexOf("土地管理")>=0 && accord.indexOf("法律")>=0 && is_not_precise==0)
+                {
+                  is_not_precise=1;
+                }
+                //处理“略”的情况--要么是估价依据标题行，要么是下面一行，中间有略的话，不判定为略
+                if(arr[i+1].indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("accord").value="略";
                 }
               }
 
               //在第一部分中，对估价基准日的提取
-              if(str.indexOf("估价基准日")>=0 && flag==0 && is_base_day==0)
+              if((str.indexOf("、估价基准日")>=0 || str.indexOf("、估价期日")>=0) && flag==0 && is_base_day==0)
               {
+                //这里，建议以后的土地估价报告，格式还是要统一一下，顿号和冒号不要混着用了，不然处理起来十分麻烦
                 document.getElementById("base_day").value = msg_get(i,"、");
                 is_base_day=1;
                 base_day=document.getElementById("base_day").value;
                 //处理“略”的情况
-                if(base_day.indexOf("略")>=0)
+                if(base_day.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("base_day").value="略";
                 }
@@ -480,48 +676,74 @@
                 document.getElementById("sche_date").value = msg_get(i,"、");
                 is_sche_date=1;
                 sche_date=document.getElementById("sche_date").value;
+                //看看在估价日期中注明了估价的截止日期没有
+                if(sche_date.indexOf("至")<0 && sche_date.indexOf("到")<0)
+                {
+                  res+="(" + pt + ")" + "'估价日期'中未注明估价的截止日期。" + "\n";
+                  pt=pt+1;
+                }
                 //处理“略”的情况
-                if(sche_date.indexOf("略")>=0)
+                if(sche_date.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("sche_date").value="略";
                 }
               }
               
               //在第一部分中，对地价定义的提取
-              if(str.indexOf("地价定义")>=0 && flag==0 && is_land_price_def==0)
+              if((str.indexOf("地价定义")>=0 || str.indexOf("价格定义")>=0) && flag==0 && is_land_price_def==0)
               {
-                document.getElementById("land_price_def").value = msg_get(i,"、");
+                //我这里默认地价定义后面的土地估价基本事项为估价期日（估价基准日）
+                document.getElementById("land_price_def").value = msg_get(i,"、估价");
                 is_land_price_def=1;
                 land_price_def=document.getElementById("land_price_def").value;
                 //看看地价定义是否是清楚的，是否明确了待估宗地的设定用途、年期、土地开发程度等内容
-                if(land_price_def.indexOf("设定用途")>=0 && land_price_def.indexOf("设定用途")>=0 && land_price_def.indexOf("设定用途")>=0 && land_price_clear==0)
+                if(land_price_def.indexOf("设定用途")>=0 && land_price_def.indexOf("年期")>=0 && land_price_def.indexOf("土地开发程度")>=0 && land_price_clear==0)
                 {
                   land_price_clear=1;
                 }
+                //看看地价定义中是否说明了土地价格的权利，包括所有权，使用权，租赁权，地役权等等
+                if(land_price_def.indexOf("所有权")>=0 || land_price_def.indexOf("使用权")>=0 || land_price_def.indexOf("租赁")>=0 || land_price_def.indexOf("地役权")>=0)
+                {
+                  land_price_right=1;
+                }
                 //处理“略”的情况
-                if(land_price_def.indexOf("略")>=0)
+                if(land_price_def.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("land_price_def").value="略";
                 }
               }
               
               //在第一部分中，对估价结果的提取
-              if(str.indexOf("估价结果")>=0 && flag==0 && is_result==0)
+              if(str.indexOf("、估价结果")>=0 && flag==0 && is_result==0)
               {
-                document.getElementById("result").value = msg_get(i,"、");
+                //alert(msg_get(i,"、"));
+                document.getElementById("land_price_res").value = msg_get(i,"、");
                 is_result=1;
-                result=document.getElementById("result").value;
-                //处理“略”的情况
-                if(result.indexOf("略")>=0)
+                result=document.getElementById("land_price_res").value;
+                //alert(result);
+                //估价结果信息要切记全面，具体，要囊括--土地面积，单位面积地价，总地价和楼面地价四项
+                if(result.indexOf("土地面积")>=0 && result.indexOf("单位面积地价")>=0 && result.indexOf("总地价")>=0 && result.indexOf("楼面地价")>=0)
                 {
-                  document.getElementById("result").value="略";
+                  land_res_full=1;
+                }
+                //估价结果中无大写的情况
+                if(result.indexOf("大写")<0)
+                {
+                  res+="(" + pt + ")" + "估价结果中无大写的情况。" + "\n";
+                  pt=pt+1;
+                }
+                //处理“略”的情况--包括首行和第二行，中间有略不作为处理
+                if(arr[i+1].indexOf("略")>=0 || str.indexOf("略")>=0)
+                {
+                  document.getElementById("land_price_res").value="略";
                 }
               }
               
               //在第一部分中，对需要特殊说明的事项的提取
               if(str.indexOf("需要特殊说明的事项")>=0 && flag==0 && is_special_case==0)
               {
-                document.getElementById("special_case").value = msg_get(i,"、土地估价师签字");
+                //需要特殊说明的事项后面，可能是土地估价师签名，也可能是签字
+                document.getElementById("special_case").value = msg_get(i,"、土地估价师");
                 is_special_case=1;
                 special_case=document.getElementById("special_case").value;
                 //使用说明的情况上，待估宗地的土地面积、土地权利状况及土地使用权年限等以当地规划管理部门核发的《国有土地使用证》为准。 
@@ -529,8 +751,13 @@
                 {
                   special_case_use_ver=1;
                 }
+                //需要特殊说明的事项中，缺少估价假设条件、资料来源、估价结果有效的条件等事项的说明
+                if(str.indexOf("假设条件")>=0 && str.indexOf("资料来源")>=0 && (str.indexOf("估价结果有效")>=0 && str.indexOf("条件")>=0))
+                {
+                  special_case_issue=1;
+                }
                 //处理“略”的情况
-                if(special_case.indexOf("略")>=0)
+                if(special_case.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("special_case").value="略";
                 }
@@ -543,23 +770,32 @@
                 {
                   land_tec_paper_man=1;
                 }
+                //看看估价目的是否为划拨地或出让地
+                if(special_case.indexOf("土地权属性质为国有划拨")>=0) is_hua=1;
+                if(special_case.indexOf("土地权属性质为国有出让")>=0) is_chu=1;
               }
 
               //在第一部分中，对土地估价师签字信息的提取
-              if(str.indexOf("土地估价师签字")>=0 && flag==0 && is_sign==0)
+              if(str.indexOf("、土地估价师")>=0 && flag==0 && is_sign==0)
               {
                 document.getElementById("sign").value = msg_get(i,"、");
                 is_sign=1;
                 sign=document.getElementById("sign").value;
-                //处理“略”的情况
-                if(sign.indexOf("略")>=0)
+                //处理“略”的情况--对于首行和下一行进行检测
+                if(arr[i+1].indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("sign").value="略";
                 }
                 //看看是否缺少土地估价师签字栏
-                if(sign.indexOf("签字")>=0 || sign.indexOf("签 字")>=0)
+                if(sign.indexOf("签字")>=0 || sign.indexOf("签 字")>=0 || str.indexOf("签名")>=0 || str.indexOf("签 名")>=0)
                 {
                   sign_col=1;
+                }
+                //看看估价师签名栏中是否有土地估价师资格证书号
+                if(sign.indexOf("估价师资格证书号")<0)
+                {
+                  res+="(" + pt + ")" + "'估价师签名栏'中无土地估价师资格证书号。" + "\n";
+                  pt=pt+1;
                 }
               }
               
@@ -569,55 +805,113 @@
                 document.getElementById("stamp").value = msg_get(i,"、");
                 is_stamp=1;
                 stamp=document.getElementById("stamp").value;
+                //看看土地估价机构盖章栏有没有估价机构负责人的签字
+                if(stamp.indexOf("估价机构负责人")>=0 && stamp.indexOf("签字")>=0)
+                {
+                  stamp_sign=1;
+                }
                 //处理“略”的情况
-                if(stamp.indexOf("略")>=0)
+                if(stamp.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("stamp").value="略";
                 }
               }
 
-              //在第二部分中，对土地登记状况信息的提取
-              if(str.indexOf("土地登记状况")>=0 && flag==1 && is_register==0)
+              //在第二部分中，对估价对象描述信息的提取
+              if(str.indexOf("、估价对象描述")>=0 && flag==1 && is_land_des==0)
               {
-                register = msg_get(i,"土地权利状况");
-                //把前面那些标题符去掉
-                register=register.substring(9);
-                is_register=1;
-                document.getElementById("register").value=register;
-                //处理“略”的情况
-                if(register.indexOf("略")>=0)
+                land_des = msg_get(i,"、地价影响因素分析");
+                is_land_des=1;
+                document.getElementById("land_des").value=land_des;
+                //土地位置状况中，缺少土地用途、土地级别的描述
+                if(land_des.indexOf("土地用途")>=0 || land_des.indexOf("土地级别")>=0)
                 {
-                  document.getElementById("register").value="略";
+                  land_level_func=1;
                 }
-              }
-              
-              //在第二部分中，对土地权利状况信息的提取
-              if(str.indexOf("土地权利状况")>=0 && flag==1 && is_right==0)
-              {
-                right = msg_get(i,"土地利用状况");
-                //把前面那些标题符去掉
-                right=right.substring(9);
-                is_right=1;
-                document.getElementById("right").value=right;
-                //处理“略”的情况
-                if(right.indexOf("略")>=0)
+                if(land_des.indexOf("四至")>=0 || land_des.indexOf("东至")>=0)
                 {
-                  document.getElementById("right").value="略";
+                  land_four_dir=1;
                 }
-              }
-              
-              //在第二部分中，对土地权利状况信息的提取
-              if(str.indexOf("土地利用状况")>=0 && flag==1 && is_land_use==0)
-              {
-                land_use = msg_get(i,"、");
-                //把前面那些标题符去掉
-                land_use=land_use.substring(9);
-                is_land_use=1;
-                document.getElementById("land_use").value=land_use;
-                //处理“略”的情况
-                if(land_use.indexOf("略")>=0)
+                //在土地权利状况中，缺少他项权利状况的描述
+                if(land_des.indexOf("他项权利")>=0)
                 {
-                  document.getElementById("land_use").value="略";
+                  land_other_right=1;
+                }
+                //在土地登记状况中，证书名字错，应为国有土地使用证
+                if(land_des.indexOf("国有建设用地使用证")>=0)
+                {
+                  res+="(" + pt + ")" + "'在土地登记状况中，证书名字错，应为国有土地使用证。" + "\n";
+                  pt=pt+1;
+                }
+                //在估价对象的描述中，看看土地登记状况，土地权利状况和土地利用状况是否颠倒了，可以考虑提取三者内容中的关键信息
+                var a,b;
+                var sit;
+                //对土地登记状况的处理
+                if(land_des.indexOf("土地登记状况")>=0)
+                {
+                  a=land_des.indexOf("土地登记状况");
+                  b=land_des.indexOf("。",a+1);
+                  sit=land_des.substring(a,b);
+                  //alert(sit);
+                  //如果存在宗地编号信息，用途或土地使用者
+                  if(sit.indexOf("宗地编号")>=0||sit.indexOf("用途")>=0||sit.indexOf("土地使用者")>=0)
+                  {
+                    land_sign=1;
+                  }
+                  //如果土地登记状况中没有四至的情况描述，则报错
+                  if(sit.indexOf("四至")<0)
+                  {
+                    res+="(" + pt + ")" + "'在土地登记状况中没有关于四至的情况描述。" + "\n";
+                    pt=pt+1;
+                  }
+                }
+                //对土地权利状况的处理
+                if(land_des.indexOf("土地权利状况")>=0)
+                {
+                  a=land_des.indexOf("土地权利状况");
+                  b=land_des.indexOf("。",a+1);
+                  sit=land_des.substring(a,b);
+                  //alert(sit);
+                  //如果存在土地所有权或使用权，这些一块宗地最基本的权利状况描述
+                  if(sit.indexOf("土地所有权")>=0 || sit.indexOf("土地使用权")>=0)
+                  {
+                    land_right=1;
+                  }
+                }
+                //对土地利用状况(土地位置状况)的处理
+                if(land_des.indexOf("土地利用状况")>=0||land_des.indexOf("土地位置状况")>=0)
+                {
+                  if(land_des.indexOf("土地利用状况")>=0) a=land_des.indexOf("土地利用状况");
+                  if(land_des.indexOf("土地位置状况")>=0) a=land_des.indexOf("土地位置状况");
+                  b=land_des.indexOf("。",a+1);
+                  sit=land_des.substring(a,b);
+                  //alert(sit);
+                  //如果存在合同，规划指标的描述信息
+                  if(sit.indexOf("合同")>=0 || sit.indexOf("规划指标")>=0 || sit.indexOf("用地范围")>=0)
+                  {
+                    land_use=1;
+                  }
+                }
+                //处理“略”的情况--我们还是遵循首行和下一行的“略”原则
+                if(arr[i+1].indexOf("略")>=0 || str.indexOf("略")>=0)
+                {
+                  document.getElementById("land_des").value="略";
+                }
+                //看看估价目的是否为划拨地或出让地
+                if(land_des.indexOf("土地权属性质为国有划拨")>=0) is_hua=1;
+                if(land_des.indexOf("土地权属性质为国有出让")>=0) is_chu=1;
+              }
+
+              //建筑物状况中，看看描述是否详细
+              //将建筑物和地上附着物状况作为一个土地估价事项进行单独分析
+              if(str.indexOf("建筑物和地上附着物状况")>=0 && flag==1 && is_construct_des==0)
+              {
+                construct_des = msg_get(i,"、地价影响因素分析");
+                //建筑物状况描述不详
+                if(construct_des.length<200)
+                {
+                  res+="(" + pt + ")" + "在估价对象的描述中，建筑物状况描述不详。" + "\n";
+                  pt=pt+1;
                 }
               }
               
@@ -626,39 +920,100 @@
               {
                 //alert(arr[i+1]);
                 //如果直接有“略”的话，则所有的空项均为略
-                if(arr[i+1].indexOf("略")>=0)
+                //地价影响因素
+                var land_effe,arr_effe;
+                var j;
+                land_effe=msg_get(i,"第三部分");
+                arr_effe=land_effe.split("．");
+                if(arr[i+1]=="(略) " || arr[i+1]=="(略)")
                 {
                   document.getElementById("general_effect").value="略";
                   document.getElementById("district_effect").value="略";
                   document.getElementById("individual_effect").value="略"; 
+                }
+                else
+                {
+                  //分别找出省略的部分
+                  var st;
+                  for(j=0;j<arr_effe.length;j++)
+                  {
+                    //alert(arr_effe[j]);
+                    //alert(arr_effe[j]);--这里我们默认的排列方式是先区域，后一般，然后个别
+
+                    if(arr_effe[j].indexOf("区域因素")>=0 && arr_effe[j].indexOf("略")>=0) document.getElementById("district_effect").value="略";
+                    else if(arr_effe[j].indexOf("区域因素")>=0) 
+                    {
+                      document.getElementById("district_effect").value=arr_effe[j].substring(4,arr_effe[j].length);
+                      st="区域因素";
+                      j=j+1;
+                    }
+                    if(arr_effe[j].indexOf("一般因素")>=0 && arr_effe[j].indexOf("略")>=0) document.getElementById("general_effect").value="略";
+                    else if(arr_effe[j].indexOf("一般因素")>=0)
+                    {
+                      document.getElementById("general_effect").value=arr_effe[j].substring(4,arr_effe[j].length);
+                      st="一般因素";
+                      j=j+1;
+                    }
+                    if(arr_effe[j].indexOf("个别因素")>=0 && arr_effe[j].indexOf("略")>=0) document.getElementById("individual_effect").value="略";
+                    else if(arr_effe[j].indexOf("个别因素")>=0)
+                    {
+                      document.getElementById("individual_effect").value=arr_effe[j].substring(4,arr_effe[j].length);
+                      st="个别因素";
+                      j=j+1;
+                    }
+                    if(st=="区域因素") document.getElementById("district_effect").value+=arr_effe[j];
+                    else if(st=="一般因素") document.getElementById("general_effect").value+=arr_effe[j];
+                    else document.getElementById("individual_effect").value+=arr_effe[j];
+                  }
                 }
               }
               
               //在第三部分中，对估价原则信息的提取
               if(str.indexOf("、估价原则")>=0 && flag==2 && is_principle==0)
               {
-                principle = msg_get(i,"、");
+                //这里在具体的提取的时候，还是写具体一点，感觉会出现一些问题，鲁棒性非常重要
+                var p1,p2;
+                p1 = msg_get(i,"、估价方法");
+                p2 = msg_get(i,"、评估思路与方法选择");
+                //alert(p2);
+                principle=p1;
+                if(principle=="") principle=p2;
+                if(principle.length>p2.length) principle=p2;
+                //alert(principle);
                 is_principle=1;
+                //alert(principle);
                 document.getElementById("principle").value=principle;
                 //处理“略”的情况
-                if(principle.indexOf("略")>=0)
+                if(principle=="(略)" || str.indexOf("略")>=0)
                 {
                   document.getElementById("principle").value="略";
+                  principle="略";
                 }
               }
               
               //在第三部分中，对估价方法信息的提取
-              if(str.indexOf("估价方法与估价过程")>=0 && flag==2 && is_way==0)
+              if((str.indexOf("、估价方法")>=0 || str.indexOf("评估思路与方法选择")>=0) && flag==2 && is_way==0)
               {
-                way = arr[i+1];
-                //这个判定不一定是准确的，一般情况，在具体估价的过程中，它的第一句话都是用于描述估价方法的
-                way=way.substring(0,way.indexOf("。")+1);
-                is_way=1;
-                document.getElementById("way").value=way;
+                var j;
+                //估价方法的描述就在附近
+                for(j=i+1;j<=i+5;j++)
+                {
+                  if((arr[j].indexOf("收益法")>=0 || arr[j].indexOf("收益还原法")>=0 || arr[j].indexOf("成本逼近法")>=0 || arr[j].indexOf("比较法")>=0 || arr[j].indexOf("基准地价系数修正法")>=0 || arr[j].indexOf("剩余法")>=0) && is_way==0)
+                  {
+                    document.getElementById("way").value=arr[j];
+                    way=document.getElementById("way").value;
+                    is_way=1;
+                  }
+                }
                 //处理“略”的情况
-                if(way.indexOf("略")>=0)
+                if(way.indexOf("略")>=0 || str.indexOf("略")>=0)
                 {
                   document.getElementById("way").value="略";
+                }
+                //估价方法缺少选择的依据
+                if(way.indexOf("依据")>=0 || way.indexOf("由于")>=0 || way.indexOf("因为")>=0 || way.indexOf("故")>=0 || way.indexOf("根据")>=0)
+                {
+                  way_no_accord=1;
                 }
                 //这里判断哪些估价方法被选用了
                 if(way.indexOf("成本逼近法")>=0)
@@ -669,22 +1024,93 @@
                 {
                   coef=1;
                 }
+                if(way.indexOf("收益法")>=0 || way.indexOf("收益还原法")>=0)
+                {
+                  income=1;
+                }
+                if(way.indexOf("比较法")>=0 || way.indexOf("市场比较法")>=0 || way.indexOf("市场法")>=0)
+                {
+                  market=1;
+                }
+                //在更新了具体的估价方法之后，我们返回到原来的估价原则，看看估价原则是否与相应的估价方法是匹配的
+                if(principle.indexOf("替代原则")<0 && market==1 && prin_replace==0)
+                {
+                  prin_replace=1;
+                }
+                if(principle.indexOf("预期收益原则")<0 && income==1 && prin_income==0)
+                {
+                  prin_income=1;
+                }
               }
 
               //在地价的确定中，看看是否罗列了土地估价结果一览表
-              if(str.indexOf("土地估价结果一览表")>=0 && flag==2)
+              if((str.indexOf("土地估价一览表")>=0 || str.indexOf("估价结果一览表")>=0))
               {
                 land_price_result_table=1;
               }
 
               //在第三部分中，对于具体估价方法的出错处理
 
+              //对于收益还原法的出错处理
+              if(now_way=="income" && income==1 && flag==2)
+              {
+                //收益还原法中，租金与价格概念混淆，“比准价格”应为“比准租金”
+                if(str.indexOf("比准价格")>=0 && compare_price_error==0)
+                {
+                  res+="(" + pt + ")" + "收益还原法中，租金与价格概念混淆，'比准价格'应为'比准租金'。" + "\n";
+                  pt=pt+1;
+                  compare_price_error=1;
+                }
+                //未说明客观租金计算方法的选择依据
+                if(str.indexOf("客观租金")>=0 && str.indexOf("依据")>=0 && rent_price_accord==0)
+                {
+                  rent_price_accord=1;
+                }
+                //检测一下，看看收益还原法中是否采用了房地合估的策略
+                if(str.indexOf("房地")>=0 && income_house==0)
+                {
+                  income_house=1;
+                }
+                //在房屋年折旧额的计算中，折旧年限不应该考虑耐用年限，应该考虑到房屋的经济寿命，已使用年限和尚可使用年限
+                if(str.indexOf("房屋年折旧额")>=0 && str.indexOf("耐用年限")>=0 && depreciation_house==0)
+                {
+                  res+="(" + pt + ")" + "收益还原法中，在计算房屋年折旧额的时候，不应该使用耐用年限，应该考虑到房屋的经济寿命，已使用年限和尚可使用年限。" + "\n";
+                  pt=pt+1;
+                  depreciation_house=1; 
+                }
+                //出租总费用中漏计税费项目
+                if(str.indexOf("税费")>=0 && tax_issue==0)
+                {
+                  tax_issue=1;
+                }
+                //在计算综合还原率的时候，要说明确定的过程以及依据
+                if(str.indexOf("综合还原率")>=0 && str.indexOf("依据")>=0 && com_reduc_accord==0)
+                {
+                  com_reduc_accord=1;
+                }
+                //看看在收益还原法中，在计算出总地价之后，是否进一步算出了单位地价
+                if(str.indexOf("单位地价")>=0 && unit_land_price==0)
+                {
+                  unit_land_price=1;
+                }
+              }
+
               //对于成本逼近法的出错处理
               if(now_way=="cost" && cost==1 && flag==2)
               {
+                //如果成本逼近法涉及到拆迁问题，需要特别考虑
+                if(str.indexOf("拆迁")>=0)
+                {
+                  is_move=1;
+                }
                 if(str.indexOf("土地取得费")>=0 && str.indexOf("土地开发费")>=0 && str.indexOf("税费")>=0 && str.indexOf("利息")>=0 && str.indexOf("利润")>=0 && str.indexOf("土地增值收益")>=0 && str.indexOf("区位修正系数")>=0 && str.indexOf("×年期修正系数")>=0)
                 {
                   cost_cal_error=1;
+                }
+                //土地增值收益这部分很容易漏掉，在计算公式中，所以这里要特别判断一下吧！
+                if(str.indexOf("+土地增值收益")>=0 && land_inc_error==0)
+                {
+                  land_inc_error=1;
                 }
                 if(str.indexOf("税费")>=0 && str.indexOf("新增建设用地有偿使用费")>=0)
                 {
@@ -700,9 +1126,27 @@
                   } 
                 }
                 //投资利润计算错误，计算投资利润时，投资利息不应计算利润
-                if(str.indexOf("投资利息")>=0 && str.indexOf("投资利润")>=0)
+                if(str.indexOf(")投资利息")>=0 && str.indexOf("投资利润")>=0)
                 {
                   cost_profit_error=1;
+                }
+                //成本逼近法中，利率如果按照一年期贷款利率进行计算，应该说明依据或者理由，注意不同的时间点，利率是否存在调整
+                if((str.indexOf("利率")>=0 && str.indexOf("贷款利率")>=0) || str.indexOf("利润率")>=0 || str.indexOf("利息率")>=0)
+                {
+                  if(str.indexOf("理由")>=0||str.indexOf("依据")>=0||str.indexOf("根据")>=0||str.indexOf("原因")>=0)
+                  {
+                    cost_interest_accord=1;
+                  }
+                }
+                //成本逼近法中，土地增值收益不应该按照合同所载明的出让金进行计算，而应该按照估价时点应有的土地增值收益水平计算
+                if(str.indexOf("土地增值收益")>=0 && str.indexOf("合同")>=0 && str.indexOf("载")>=0)
+                {
+                  inc_agreement_error=1;
+                }
+                //成本逼近法中，应该按照社会平均拆迁周期来计算拆迁周期，而不是按照估价对象实际的拆迁周期来计算利息
+                if(str.indexOf("社会平均")>=0 && str.indexOf("拆迁周期")>=0 && str.indexOf("利息")>=0 && str.indexOf("拆迁")>=0)
+                {
+                  cost_social_average_demolition_dur=1;
                 }
                 //计算土地增值收益，一定要考虑周全，包括土地取得费(征地费)，开发费，税费，投资利息，投资利润，缺一不可
                 if( (str.indexOf("土地取得费")>=0 || str.indexOf("征地费")>=0) && str.indexOf("开发费")>=0 && str.indexOf("投资利息")>=0 && str.indexOf("投资利润")>=0 && str.indexOf("土地增值收益")>=0)
@@ -714,19 +1158,60 @@
                 {
                   cost_year_jus=1;
                 }
-              }
-
-              //我们现在处理第三部分的最后一个环节，就是地价确定的部分
-              if(str.indexOf("、地价的确定")>=0 && flag==2 && is_price_final_res==0)
-              {
-                price_final_res = msg_get(i,"第四部分");
-                //把前面那些标题符去掉
-                is_price_final_res=1;
-                document.getElementById("price_final_res").value=price_final_res;
-                //处理“略”的情况
-                if(price_final_res.indexOf("略")>=0)
+                //如果要计算拆迁安置费的话，应该按照平均拆迁居民密度计算拆迁户数，而不是按照实际的拆迁户数来计算
+                if((str.indexOf("拆迁费")>=0 || str.indexOf("拆迁安置费")>=0) && str.indexOf("户")>=0)
                 {
-                  document.getElementById("price_final_res").value="略";
+                  demolition_cost_error=1;
+                } 
+                //拆迁安置费应该按照估价时点的水平进行计算，而不是拆迁完之后居民安置费用平均水平
+                if((str.indexOf("拆迁费")>=0 || str.indexOf("拆迁安置费")>=0) && str.indexOf("当时")>=0)
+                {
+                  demolition_current_cost_error=1;
+                }
+                //成本逼近法中，因为是法院处置而不计算利润不妥，应该计算利润
+                if(str.indexOf("法院处置")>=0 && str.indexOf("利润")>=0 && str.indexOf("不计")>=0)
+                {
+                  law_profit_error=1;
+                }
+                //成本逼近法中，扣除土地增值收益时不应该采用直线折旧方式，而应该采用年期修正方式，这一点要注意
+                if(str.indexOf("扣除") && str.indexOf("土地增值收益")>=0 && delete_error==0)
+                {
+                  res+="(" + "*" + ")" + "成本逼近法中，扣除土地增值收益时不应该采用直线折旧方式，而应该采用年期修正方式，这一点要注意。" + "\n";
+                  delete_error=1;
+                }
+                //成本逼近法中，未发生经营收入而不计税费不妥，应按规定计入有关税费
+                if((str.indexOf("未发生")>=0||str.indexOf("没有")>=0) && str.indexOf("收入")>=0 && str.indexOf("税费")>=0 && str.indexOf("不计")>=0)
+                {
+                  tax_fee_error=1;
+                }
+                //成本逼近法中，计算土地取得费不能以项目实际发生的费用为依据
+                if(str.indexOf("土地取得费用")>=0 && str.indexOf("实际发生")>=0 && cost_real_fee==0)
+                {
+                  cost_real_fee=1;
+                }
+                //成本逼近法中，看看土地开发费有无取费依据
+                if(str.indexOf("土地开发费")>=0)
+                {
+                  if(str.indexOf("理由")>=0||str.indexOf("依据")>=0||str.indexOf("根据")>=0||str.indexOf("原因")>=0)
+                  {
+                    cost_dev_accord=1;
+                  }
+                }
+                //成本逼近法中，'土地平整费'不应计入'土地取得费'
+                if(str.indexOf("土地平整费")>=0)
+                {
+                  res+="(" + pt + ")" + "成本逼近法中，'土地平整费'不应计入'土地取得费'。" + "\n";
+                  pt=pt+1;
+                }
+                //成本逼近法中，对于投资利息的处理，如果有公式的话，土地取得费计全期，开发期要记得乘以1/2
+                if(str.indexOf("利息=")>=0)
+                {
+                  //投资利息中开发期没有乘1/2
+                  if(str.indexOf("×1/2")<0)
+                  {
+                    res+="(" + pt + ")" + "成本逼近法中，'投资利息'的开发期没有乘以1/2。" + "\n";
+                    pt=pt+1;
+                  }
                 }
               }
 
@@ -778,9 +1263,226 @@
                   capital_letter_error=1;
                 }
               }
+
+              //对于市场比较法的出错处理
+              if(now_way=="market" && market==1 && flag==2)
+              {
+                //看看有没有使用地价指数这个说法
+                if(str.indexOf("地价指数")>=0)
+                {
+                  is_land_index=1;
+                }
+                //看看市场比较法中，是否提到了比较因素选择的程序（常用比较因素包括，交易情况，交易日期，实物状况，权益状况和区位状况）
+                if(str.indexOf("比较因素")>=0 && str.indexOf("选择")>=0 && market_compare==0)
+                {
+                  market_compare=1;
+                }
+                //如果比较因素中有'地价指数'这一项的话，应该说明地价指数的来源或者依据，告诉大家具体的数据是怎么算出来的
+                if(str.indexOf("地价指数")>=0 && (str.indexOf("来源")>=0 || str.indexOf("依据")>=0) && land_index_accord==0)
+                {
+                  land_index_accord=1;
+                }
+                if(str.indexOf("物价指数")>=0 && material_index==0)
+                {
+                  material_index=1;
+                }
+                //看看市场比较法中，是否说明了由3个比准价格确定土地单位面积地价的方法以及原因
+                if((str.indexOf("比准价格")>=0 || str.indexOf("比较实例")>=0) && str.indexOf("地价")>=0)
+                {
+                  if(str.indexOf("原因")>=0||str.indexOf("依据")>=0||str.indexOf("根据")>=0||str.indexOf("作为")>=0)
+                  {
+                    compare_price_accord=1;
+                  }
+                }
+                //看看有没有交易情况的信息，评估土地的市场价值是不需要交易情况修正的
+                if(str.indexOf("交易情况")>=0 && str.indexOf("修正")>=0 && transaction_error==0)
+                {
+                  //alert(str);
+                  if(is_market_price==1)
+                  {
+                    transaction_error=1;
+                    res+="(" + pt + ")" + "评估土地的市场价格，是不需要做交易情况修正的。" + "\n";
+                    pt=pt+1;
+                  }
+                }
+                //期日修正应该进行详细说明
+                if(str.indexOf("期日修正")>=0)
+                {
+                  if(arr[i+1].length<30)
+                  {
+                    res+="(" + pt + ")" + "市场比较法中，期日修正未作详细说明，只进行一般的描述。" + "\n";
+                    pt=pt+1;
+                  }
+                }
+                //市场比较法的最终结果应取算术平均数，不应为众数
+                if(str.indexOf("众数")>=0)
+                {
+                  res+="(" + pt + ")" + "市场比较法的最终结果应取算术平均数，不应为众数。" + "\n";
+                  pt=pt+1;
+                }
+                //交易情况的说明是否是正确的呢？--偏高和偏低都是不准确的说法
+                if(str.indexOf("交易情况")>=0 && (str.indexOf("高")>=0||str.indexOf("低")>=0))
+                {
+                  //交易情况不应该用偏高或者偏低来描述，而应该用正常和不正常来描述，这里叙述上有问题
+                  res+="(" + pt + ")" + "在市场比较法中，交易情况说明不正确。" + "\n";
+                  pt=pt+1;
+                }
+                //看看市场比较法中有没有进行土地使用年期修正
+                if(str.indexOf("使用年期")>=0 && str.indexOf("修正")>=0 && is_use_dur_jus==0)
+                {
+                  is_use_dur_jus=1;
+                }
+                //看看市场比较法的计算公式中，是否所有的项目是全面的
+                if(str.indexOf("土地价格=")>=0)
+                {
+                  if(str.indexOf("交易情况")<0||str.indexOf("交易日期")<0||str.indexOf("区域因素")<0||str.indexOf("个别因素")<0)
+                  {
+                    res+="(" + pt + ")" + "在市场比较法的计算公式中,交易情况因素修正，交易日期因素修正，区域因素修正，个别因素修正，其中的一项或几项不全。" + "\n";
+                    pt=pt+1;
+                  }
+                }
+                //市场比较法的年期修正中，应该对r的取值进行说明
+                if(str.indexOf("年期修正")>=0 && str.indexOf("r")>=0 && str.indexOf("取值")>=0 && dur_jus_cer==0)
+                {
+                  dur_jus_cer=1;
+                }
+                //我这里写一个简单的土地估价市场比较法区域因素和个别因素的判定程序，可能后面还要进行一些修改，不过暂时就这样吧
+                //开启因素条件说明表
+                if(str.indexOf("因素条件说明表")>=0) 
+                {
+                  market_table=1;
+                }
+                if(str.indexOf("区")>=0) effect_now="区域因素";
+                if(str.indexOf("个")>=0) effect_now="个别因素";
+                if(market_table==1) 
+                {
+                  //alert(str);
+                  if(effect_now=="区域因素" && d_f==0)
+                  {
+                    if(str.indexOf("面积")>=0||str.indexOf("基础设施")>=0||str.indexOf("临街状况")>=0||str.indexOf("容积率")>=0)
+                    {
+                      if(str.indexOf("地质")>=0||str.indexOf("位置")>=0||str.indexOf("形状")>=0)
+                      {
+                        //res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将个人因素写到区域因素里面。" + "\n";
+                        //pt=pt+1;
+                        //d_f=1;
+                        //alert("hah");
+                      }
+                    }
+                    if(str.indexOf("面积")>=0)
+                    {
+                       res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将面积写到区域因素里面。" + "\n";
+                       pt=pt+1;
+                    }
+                    if(str.indexOf("基础设施")>=0)
+                    {
+                       res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将基础设施写到区域因素里面。" + "\n";
+                       pt=pt+1;
+                    }
+                    if(str.indexOf("临街状况")>=0)
+                    {
+                       res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将临街状况写到区域因素里面。" + "\n";
+                       pt=pt+1;
+                    }
+                    if(str.indexOf("容积率")>=0)
+                    {
+                       res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将容积率写到区域因素里面。" + "\n";
+                       pt=pt+1;
+                    }
+                    if(str.indexOf("地质")>=0)
+                    {
+                       res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将地质写到区域因素里面。" + "\n";
+                       pt=pt+1;
+                    }
+                    if(str.indexOf("位置")>=0)
+                    {
+                       res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将位置写到区域因素里面。" + "\n";
+                       pt=pt+1;
+                    }
+                    if(str.indexOf("形状")>=0)
+                    {
+                       res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将形状写到区域因素里面。" + "\n";
+                       pt=pt+1;
+                    }
+                  }
+                  if(effect_now=="个别因素" && o_f==0)
+                  {
+                    if(str.indexOf("环境条件")>=0||str.indexOf("商服繁华程度")>=0||str.indexOf("产业聚集程度")>=0||str.indexOf("交通条件")>=0)
+                    {
+                      if(str.indexOf("公用设施")>=0||str.indexOf("城镇规划")>=0||str.indexOf("土地使用限制")>=0)
+                      {
+                        //res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将区域因素写到个别因素里面。" + "\n";
+                        //pt=pt+1;
+                        //o_f=1;
+                      }
+                    }
+                    if(str.indexOf("环境条件")>=0)
+                    {
+                      //alert(str);
+                      res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将环境条件写到个别因素里面。" + "\n";
+                      pt=pt+1;
+                    }
+                    if(str.indexOf("商服繁华程度")>=0)
+                    {
+                      res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将商服繁华程度写到个别因素里面。" + "\n";
+                      pt=pt+1;
+                    }
+                    if(str.indexOf("产业聚集程度")>=0)
+                    {
+                      res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将产业聚集程度写到个别因素里面。" + "\n";
+                      pt=pt+1;
+                    }
+                    if(str.indexOf("交通条件")>=0)
+                    {
+                      res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将交通条件写到个别因素里面。" + "\n";
+                      pt=pt+1;
+                    }
+                    if(str.indexOf("公用设施")>=0)
+                    {
+                      res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将公用设施写到个别因素里面。" + "\n";
+                      pt=pt+1;
+                    }
+                    if(str.indexOf("城镇规划")>=0)
+                    {
+                      res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将城镇规划写到个别因素里面。" + "\n";
+                      pt=pt+1;
+                    }
+                    if(str.indexOf("土地使用限制")>=0)
+                    {
+                      res+="(" + pt + ")" + "在市场比较法的计算公式中, 不应该将土地使用限制写到个别因素里面。" + "\n";
+                      pt=pt+1;
+                    }
+                  }
+                }
+                if(str.indexOf("编制比较因素条件指数表")>=0)
+                {
+                  market_table=0;
+                  //alert("hah");
+                }
+              }
+              //我们现在处理第三部分的最后一个环节，就是地价确定的部分
+              //1998年的真题出现了非常古怪的标题--(三)评估结果的确定，所以这里的处理有点麻烦
+              if((str.indexOf("、地价的确定")>=0 || str.indexOf("评估结果的确定")>=0) && flag==2 && is_price_final_res==0)
+              {
+                price_final_res = msg_get(i,"第四部分");
+                //把前面那些标题符去掉
+                is_price_final_res=1;
+                document.getElementById("price_final_res").value=price_final_res;
+                //评估结果的确定中，是否考虑了大写的情况
+                if(price_final_res.indexOf("大写")<0)
+                {
+                  res+="(" + pt + ")" + "地价评估结果的确定中，没有考虑大写的情况。" + "\n";
+                  pt=pt+1;
+                }
+                //处理“略”的情况
+                if(price_final_res.indexOf("略")>=0 || str.indexOf("略")>=0)
+                {
+                  document.getElementById("price_final_res").value="略";
+                }
+              }
               
               //下面是附件中常见的错误项
-              if(flag==3 && str.indexOf("国有土地使用证复印件")>=0)
+              if(flag==3 && (str.indexOf("国有土地使用证复印件")>=0 || str.indexOf("国有土地使用证")>=0))
               {
                 land_use_ver=1;
               }
@@ -790,13 +1492,191 @@
                 object_photo=1;
               }
 
+              if(flag==3 && str.indexOf("估价对象")>=0 && str.indexOf("房屋产权证")>=0)
+              {
+                object_house_cer=1;
+              }
 
+              if(flag==3 && str.indexOf("估价对象")>=0 && str.indexOf("位置示意图")>=0)
+              {
+                object_location_photo=1;
+              }
+
+              if(flag==3 && str.indexOf("估价机构")>=0 && str.indexOf("工商营业执照")>=0)
+              {
+                agent_business_cer=1;
+              }
+              
+              //在第四部分中，读取附件的内容
+              if(flag==3)
+              {
+                //这里判定一下，其实最科学的名称是'附录'而不是'附件'，所以写成'第四部分 附件'的话，还是要算错的
+                if(arr[i].indexOf("附件")>=0 || arr[i].indexOf("附 件")>=0)
+                {
+                  res+="(" + pt + ")" + "第四部分应为'附录'。" + "\n";
+                  pt=pt+1;
+                }
+                //如果附件有省略的话，就填写'略'
+                if(arr[i].indexOf("略")>=0) document.getElementById("appendix").value="略";
+                else if(arr[i+1]!=null && arr[i+1]!="") document.getElementById("appendix").value+=arr[i+1]+"\n";
+                appendix=document.getElementById("appendix").value;
+              }
 
 
 
 
            }
+              
+              //我们还要处理列表中没有提及的项目吧！
 
+              //总述中的估价信息
+           
+           if(document.getElementById("pname").value=="")
+           {
+              document.getElementById("pame").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价项目名称为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("wei_name").value=="")
+           {
+              document.getElementById("wei_name").value="无";
+              res+="(" + pt + ")" + "估价报告中的委托估价方为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("shou_name").value=="")
+           {
+              document.getElementById("shou_name").value="无";
+              res+="(" + pt + ")" + "估价报告中的受托估价方为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("ob_des").value=="")
+           {
+              document.getElementById("ob_des").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价对象为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("aim").value=="")
+           {
+              document.getElementById("aim").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价目的为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("accord").value=="")
+           {
+              document.getElementById("accord").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价依据为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("base_day").value=="")
+           {
+              document.getElementById("base_day").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价基准日为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("sche_date").value=="")
+           {
+              document.getElementById("sche_date").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价日期为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("land_price_def").value=="")
+           {
+              document.getElementById("land_price_def").value="无";
+              res+="(" + pt + ")" + "估价报告中的地价定义为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("land_price_res").value=="")
+           {
+              document.getElementById("land_price_res").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价结果为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("special_case").value=="")
+           {
+              document.getElementById("special_case").value="无";
+              res+="(" + pt + ")" + "估价报告中的需要特殊说明的事项为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("sign").value=="")
+           {
+              document.getElementById("sign").value="无";
+              res+="(" + pt + ")" + "估价报告中的土地估价师签字项目为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("stamp").value=="")
+           {
+              document.getElementById("stamp").value="无";
+              res+="(" + pt + ")" + "估价报告中的土地估价结构(章)为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("land_des").value=="")
+           {
+              document.getElementById("land_des").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价对象描述项目为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("general_effect").value=="")
+           {
+              document.getElementById("general_effect").value="无";
+              res+="(" + pt + ")" + "估价报告中的一般因素为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("district_effect").value=="")
+           {
+              document.getElementById("district_effect").value="无";
+              res+="(" + pt + ")" + "估价报告中的区域因素为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("individual_effect").value=="")
+           {
+              document.getElementById("individual_effect").value="无";
+              res+="(" + pt + ")" + "估价报告中的个别因素为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("principle").value=="")
+           {
+              document.getElementById("principle").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价原则为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("way").value=="")
+           {
+              document.getElementById("way").value="无";
+              res+="(" + pt + ")" + "估价报告中的估价方法为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("price_final_res").value=="")
+           {
+              document.getElementById("price_final_res").value="无";
+              res+="(" + pt + ")" + "估价报告中的地价确定为空。" + "\n";
+              pt=pt+1;
+           }
+
+           if(document.getElementById("appendix").value=="")
+           {
+              document.getElementById("appendix").value="无";
+              res+="(" + pt + ")" + "估价报告中的附件栏目为空。" + "\n";
+              pt=pt+1;
+           }
 
               
               //第一部分中的总述纠错
@@ -806,11 +1686,32 @@
                 res+="(" + pt + ")" + "估价依据缺乏土地估价技术规程。" + "\n";
                 pt=pt+1;
               }
+              
+              //估价依据中，“××省关于土地管理的法律、法规”提法太笼统，未说明与本次评估有关的法律、法规是哪些
+              if(is_not_precise==1)
+              {
+                res+="(" + pt + ")" + "估价依据中，'xx省关于土地管理的法律、法规'提法太笼统，未说明与本次评估有关的法律、法规是哪些。" + "\n";
+                pt=pt+1;
+              }
+
+              //估价依据中，缺少估价对象土地证书或权属证明
+              if(is_land_cer==0)
+              {
+                res+="(" + pt + ")" + "估价依据缺乏估价对象土地证书或权属证明。" + "\n";
+                pt=pt+1;
+              }
 
               //地价定义是否是清晰的--地价定义不清楚，未明确待估宗地的设定用途、年期、土地开发程度等内容
               if(land_price_clear==0)
               {
-                res+="(" + pt + ")" + "地价定义不清楚，未明确待估宗地的设定用途、年期、土地开发程度等内容。" + "\n";
+                res+="(" + pt + ")" + "地价定义不清楚，未明确待估宗地的设定用途、年期、土地开发程度等内容，或是其中的一项或几项没有交代清楚。" + "\n";
+                pt=pt+1;
+              }
+
+              //估价定义中，未说明是什么权利的土地价格
+              if(land_price_right==0)
+              {
+                res+="(" + pt + ")" + "估价定义中，未说明是什么权利的土地价格。" + "\n";
                 pt=pt+1;
               }
               
@@ -821,19 +1722,33 @@
                 pt=pt+1;
               }
 
+              //估价目的不能同时有两个目的，如为两个目的，应分别出具报告
+              if(double_aim==1)
+              {
+                res+="(" + pt + ")" + "估价目的项目中，同时存在两个估价目的，如为两个估价目的，应分别出具报告。" + "\n";
+                pt=pt+1;
+              }
+
+              //需要特殊说明的事项中，缺少估价假设条件、资料来源、估价结果有效的条件等事项的说明
+              if(special_case_issue==0)
+              {
+                res+="(" + pt + ")" + "使用说明中，缺少估价假设条件、资料来源、估价结果有效的条件等事项的说明，缺少这其中的一项或几项。" + "\n";
+                pt=pt+1;
+              }
+
               //使用说明中，土地估价报告和技术报告，他们的归属人是不一样的
               //在使用说明中，"土地估价报告"归委托方使用
               
               if(land_paper_wei==0)
               {
-                res+="(" + pt + ")" + "在使用说明中，'土地估价报告'归委托方使用。" + "\n";
+                res+="(" + pt + ")" + "在使用说明中，应该注明'土地估价报告'归委托方使用。" + "\n";
                 pt=pt+1;
               }
 
               //在使用说明中，"土地估价技术报告"归属土地管理部门进行估价报告审核或备案以及估价机构存档用
               if(land_tec_paper_man==0)
               {
-                res+="(" + pt + ")" + "在使用说明中，'土地估价技术报告'归属土地管理部门进行估价报告审核或备案以及估价机构存档用。" + "\n";
+                res+="(" + pt + ")" + "在使用说明中，应该注明'土地估价技术报告'归属土地管理部门进行估价报告审核或备案以及估价机构存档用。" + "\n";
                 pt=pt+1;
               }
 
@@ -843,35 +1758,150 @@
                 res+="(" + pt + ")" + "缺少土地估价师签字栏。" + "\n";
                 pt=pt+1;
               }
-              
+
+              //在土地估价机构签字盖章栏中，是否存在估价机构负责人的签字
+              if(stamp_sign==0)
+              {
+                res+="(" + pt + ")" + "土地估价机构盖章栏，没有估价机构负责人的签字。" + "\n";
+                pt=pt+1;
+              }
+
               //第二部分中的估价对象描述及地价影响因素分析纠错
 
+              //在估价对象的土地位置状况描述中，缺少土地用途、土地级别的描述，是否有对四至的描述
+              //看看他项权利是否有交代
+              if(land_level_func==0)
+              {
+                res+="(" + pt + ")" + "在估价对象的土地位置状况描述中，缺少土地用途、土地级别的描述。" + "\n";
+                pt=pt+1;
+              }
+
+              if(land_four_dir==0)
+              {
+                res+="(" + pt + ")" + "在估价对象的土地位置状况描述中，缺少对四至的描述。" + "\n";
+                pt=pt+1;
+              }
+              
+              //土地权利状况中，缺少他项权利状况的描述
+              if(land_other_right==0)
+              {
+                res+="(" + pt + ")" + "土地权利状况中，缺少他项权利状况的描述。" + "\n";
+                pt=pt+1;
+              }
+
+              //在土地估价报告中，土地权属性质的描述存在前后不一致的情况，说法有误
+              if(is_chu==1 && is_hua==1)
+              {
+                res+="(" + pt + ")" + "在土地估价报告中，土地权属性质的描述存在前后不一致的情况，说法有误。" + "\n";
+                pt=pt+1;
+              }
+
+              //在土地估价对象描述中，看看土地登记状况，土地权利状况，土地利用状况这三者之间是否存在混用的情况
+              if(land_sign==0) 
+              {
+                res+="(" + pt + ")" + "在土地估价对象描述中，土地登记状况错用。" + "\n";
+                pt=pt+1;
+              }
+
+              if(land_right==0) 
+              {
+                res+="(" + pt + ")" + "在土地估价对象描述中，土地权利状况错用。" + "\n";
+                pt=pt+1;
+              }
+
+              if(land_use==0) 
+              {
+                res+="(" + pt + ")" + "在土地估价对象描述中，土地利用状况错用。" + "\n";
+                pt=pt+1;
+              }
 
               //其它虽然不算错误，但需要注意的事项
               res+="(" + "*" + ")" + "在估价报告中说明了土地面积和建筑面积之后，看看报告中所列出的容积率和容积率修正系数是否是准确的。" + "\n";
 
               //第三部分对估价方法的纠错
+
+              //看看估价原则中是否有缺项
+              if(principle.indexOf("略")>=0) prin_replace=0;
+              if(principle.indexOf("略")>=0) prin_income=0;
+              //alert(principle);
+              if(prin_replace==1)
+              {
+                res+="(" + pt + ")" + "估价原则中，缺少与本次估价方法紧密相关的替代原则。" + "\n";
+                pt=pt+1;
+              }
+
+              if(prin_income==1)
+              {
+                res+="(" + pt + ")" + "估价原则中，缺少与本次估价方法紧密相关的预期收益原则。" + "\n";
+                pt=pt+1;
+              }
+
+              //看看估价方法中是否提供了选择的依据
+              if(way_no_accord==0)
+              {
+                res+="(" + pt + ")" + "未说明估价方法选择的依据。" + "\n";
+                pt=pt+1;
+              }
+
+              //收益还原法纠错
+              //未说明客观租金计算方法的选择依据
+              if(income==1 && rent_price_accord==0)
+              {
+                res+="(" + pt + ")" + "在收益还原法中，未说明客观租金计算方法的选择依据。" + "\n";
+                pt=pt+1;
+              }
+              
+              //出租总费用中漏计税费项目
+              if(income==1 && tax_issue==0)
+              {
+                res+="(" + pt + ")" + "在收益还原法中，出租总费用中漏记税费项目。" + "\n";
+                pt=pt+1;
+              }
+
+              //未说明综合还原率确定的过程及依据
+              if(income==1 && com_reduc_accord==0)
+              {
+                res+="(" + pt + ")" + "在收益还原法中，未说明综合还原率确定的过程及依据。" + "\n";
+                pt=pt+1;
+              }
+
+              //收益还原法估价结果无单位地价
+              if(income==1 && unit_land_price==0)
+              {
+                res+="(" + pt + ")" + "在收益还原法中，估价结果无单位地价。" + "\n";
+                pt=pt+1;
+              }
+
+              //总楼价计算中的使用年期(n)应为土地的使用年限，而不能用房屋剩余使用年限，或者说，应该考虑经济寿命，并且遵守孰短原则
+              if(income==1)
+              {
+                res+="(" + "*" + ")" + "在收益还原法中，总楼价的计算年期应该综合比较土地的使用年限，房屋剩余使用年限，房屋经济寿命，遵循孰短原则进行。" + "\n";
+                pt=pt+1;
+              }
               
               //成本逼近法纠错
-              
-              res+="(" + "*" + ")" + "在成本逼近法中，看看增值收益率，投资利润率，贷款利率等是否是准确的。" + "\n";
+
+              if(cost==1)
+              {
+                res+="(" + "*" + ")" + "在成本逼近法中，看看增值收益率，投资利润率，贷款利率等是否是准确的。" + "\n";
+              }
 
               //成本逼近法的计算公式有误
-              if(cost_cal_error==0)
+              if(cost_cal_error==0 && cost==1)
               {
                 res+="(" + pt + ")" + "成本逼近法的计算公式有误。" + "\n";
                 pt=pt+1;
               }
 
               //成本逼近法中，税费不应包括新增建设用地有偿使用费
-              if(cost_tax_inc_error==1)
+              if(cost_tax_inc_error==1 && cost==1)
               {
                 res+="(" + pt + ")" + "成本逼近法中，税费不应包括新增建设用地有偿使用费。" + "\n";
                 pt=pt+1;
               }
               
               //成本逼近法投资利息的计算过程中，土地取得费和相关税费应该算整年，而土地开发费，由于开发时的费用是均匀投入的，所以应该算半年
-              if(invest_half_error==1)
+              if(invest_half_error==1 && cost==1) 
               {
                 //成本逼近法中投资利息计算错误，土地开发费的计息期应为半周期，土地取得费和相关税费应该是全周期
                 res+="(" + pt + ")" + "成本逼近法中投资利息计算错误，土地开发费的计息期应为半周期，土地取得费和相关税费应该是全周期。" + "\n";
@@ -879,46 +1909,168 @@
               }
 
               //投资利润计算错误，计算投资利润时，投资利息不应计算利润
-              if(cost_profit_error==1)
+              if(cost_profit_error==1 && cost==1)
               {
                 res+="(" + pt + ")" + "成本逼近法中投资利润计算错误，计算投资利润时，投资利息不应计算利润。" + "\n";
                 pt=pt+1;
               }
               
               //成本逼近法中，在计算土地增值收益时，应该综合考虑征地费，土地开发费，投资利息，投资利润，相关税费的情况，看看报告中是不是缺项了
-              if(cost_land_inc==0)
+              if(cost_land_inc==0 && cost==1)
               {
-                res+="(" + pt + ")" + "成本逼近法中，在计算土地增值收益时，应该综合考虑征地费，土地开发费，投资利息，投资利润，相关税费的情况，看看报告中是不是缺项了。" + "\n";
+                res+="(" + "*" + ")" + "成本逼近法中，在计算土地增值收益时，应该综合考虑征地费，土地开发费，投资利息，投资利润，相关税费的情况，看看报告中是不是缺项了。" + "\n";
                 pt=pt+1;
               }
 
               //成本逼近法计算待估宗地的价格有误，计算结果是无限年期的价格，应进行土地使用年期修正
-              if(cost_year_jus==0)
+              if(cost_year_jus==0 && cost==1)
               {
                 res+="(" + pt + ")" + "成本逼近法中，应该记得进行土地使用年期修正。" + "\n";
+                pt=pt+1;
+              }
+
+              //成本逼近法中，计算土地增值收益的时候，不应该按照合同所载明的土地出让金来计算，而应该按照估价时点应有的土地增值收益进行
+              if(inc_agreement_error==1 && cost==1)
+              {
+                res+="(" + pt + ")" + "成本逼近法中，计算土地增值收益的时候，不应该按照合同所载明的土地出让金来计算，而应该按照估价时点应有的土地增值收益进行。" + "\n";
+                pt=pt+1;
+              }
+
+              //成本逼近法中，看看公式中是否漏掉了土地增值收益的加项了
+              if(land_inc_error==0 && cost==1)
+              {
+                 res+="(" + pt + ")" + "成本逼近法中，看看公式中是否漏掉了土地增值收益的加项了。" + "\n";
+                pt=pt+1;
+              }
+
+              //成本逼近法中，因实际未发生经营收入而不计税费不妥，应按规定计入有关税费
+              if(tax_fee_error==1 && cost==1)
+              {
+                res+="(" + pt + ")" + "成本逼近法中，因实际未发生经营收入而不计税费不妥，应按规定计入有关税费。" + "\n";
+                pt=pt+1;
+              }
+
+              //成本逼近法中，在计算拆迁安置费的时候，不能按照当时的标准，而应按照估价时点时的拆迁补偿费用水平计算
+              if(demolition_current_cost_error==1 && cost==1)
+              {
+                res+="(" + pt + ")" + "成本逼近法中，在计算拆迁安置费的时候，不能按照当时的标准，而应按照估价时点时的拆迁补偿费用水平计算。" + "\n";
+                pt=pt+1;
+              }
+
+              //成本逼近法中计算拆迁安置费的时候，需要依据平均拆迁居民密度，而不是实际的拆迁户数
+              if(demolition_cost_error==1 && cost==1)
+              {
+                res+="(" + pt + ")" + "成本逼近法中计算拆迁安置费的时候，需要依据平均拆迁居民密度，而不是实际的拆迁户数。" + "\n";
+                pt=pt+1;
+              }
+
+              //成本逼近法中，按估价对象实际的拆迁周期计算利息不妥，应交代该周期是否为社会平均拆迁周期
+              if(cost_social_average_demolition_dur==0 && cost==1 && is_move==1)
+              {
+                res+="(" + pt + ")" + "成本逼近法中，按估价对象实际的拆迁周期计算利息不妥，应交代该周期是否为社会平均拆迁周期。" + "\n";
+                pt=pt+1;
+              }
+
+              //成本逼近法中，利息率的取值，应该说明原因，如果取类似一年期贷款利率的时候，要记得长一个心眼，问问为什么要取这个值
+              if(cost_interest_accord==0 && cost==1)
+              {
+                res+="(" + pt + ")" + "成本逼近法中，对于利息率,利率，利润率等数据的取值，应该说明原因，看看依据是什么。" + "\n";
+                pt=pt+1;
+              }
+
+              //成本逼近法中，因为是法院处置而不计算利润不妥，应该计算利润
+              if(law_profit_error==1 && cost==1)
+              {
+                res+="(" + pt + ")" + "成本逼近法中，因为是法院处置而不计算利润不妥，应该计算利润。" + "\n";
+                pt=pt+1;
+              }
+
+              //成本逼近法中，计算土地取得费不能以项目实际发生的费用为依据
+              if(cost_real_fee==1 && cost==1)
+              {
+                res+="(" + pt + ")" + "成本逼近法中，计算土地取得费不能以项目实际发生的费用为依据。" + "\n";
+                pt=pt+1;
+              }
+
+              //'土地开发费'无取费依据
+              if(cost_dev_accord==0 && cost==1)
+              {
+                res+="(" + pt + ")" + "成本逼近法中，'土地开发费'无取费依据。" + "\n";
                 pt=pt+1;
               }
               
               //对于基准地价系数修正法的纠错处理
               
               //基准地价系数修正法中，未明确基准地价的内涵，包括颁布日期、用途、基准地价、开发程度等
-              if(base_price_mean==0)
+              if(base_price_mean==0 && coef==1)
               {
                 res+="(" + pt + ")" + "基准地价系数修正法中，未明确基准地价的内涵，包括颁布日期，用途，基准地价，开发程度等。" + "\n";
                 pt=pt+1;
               }
 
               //基准地价系数修正法中，待估宗地为国有划拨土地，根据估价目的，土地使用年限可设定为最高出让年限，与基准地价年限相同，不必进行年期修正    
-              if(base_year_jus==1)
+              if(base_year_jus==1 && coef==1)
               {
                 res+="(" + pt + ")" + "基准地价系数修正法中，待估宗地为国有划拨土地，根据估价目的，土地使用年限可设定为最高出让年限，与基准地价年限相同，不必进行年期修正。" + "\n";
                 pt=pt+1;
               }
 
               //看看基准地价系数修正法计算结果是否有误
-              if(formu_correct==0)
+              if(formu_correct==0 && coef==1)
               {
                 res+="(" + pt + ")" + "看看基准地价系数修正法计算结果是否有误。" + "\n";
+                pt=pt+1;
+              }
+
+              //市场比较法纠错
+              //市场比较法的基本情况表中，估价对象的用地面积、重置单价与报告前面的叙述不符
+              if(market==1)
+              {
+                res+="(" + "*" + ")" + "市场比较法的基本情况表中，估价对象的用地面积、重置单价,看看是否和前面报告叙述的是一致的。" + "\n";
+                res+="(" + "*" + ")" + "市场比较法的基本情况表中,比较因素条件指数表和因素修正系数表必须要保持一致。" + "\n";
+                res+="(" + "*" + ")" + "市场比较法中，交易时间相同的估价对象或比较案例，它们的地价指数应该是一致的。" + "\n";
+                res+="(" + "*" + ")" + "市场比较法中，请注意区域因素，个别因素不能混淆，土地面积，最有效用途和基础设施状况属于区域因素。" + "\n";
+                res+="(" + "*" + ")" + "市场比较法中，各个可比实例的面积规模之比，它的差距应该在两倍以内。" + "\n";
+                res+="(" + "*" + ")" + "市场比较法中，仔细检查，看看是否所有的情况都做出了修正。其中，相同的情况的修正值应该相同，如果不同的条件下，比如容积率，一个是0.75，一个是0.8，而最后的评估分却相同，则报错。不同的值，一般情况是数值越高，它的评估分就越大。" + "\n";
+                res+="(" + "*" + ")" + "市场比较法中，年期修正请选取对应的实例。" + "\n";
+              }
+              
+              //市场比较法中，看看是否缺少比较因素选择的程序
+              if(market_compare==0 && market==1)
+              {
+                res+="(" + pt + ")" + "市场比较法中，缺少比较因素选择的程序。" + "\n";
+                pt=pt+1;
+              }
+
+              //市场比较法中，看看是否进行了土地使用年期修正
+              if(is_use_dur_jus==0 && market==1)
+              {
+                res+="(" + pt + ")" + "市场比较法中，缺少对土地使用年期的修正。" + "\n";
+                pt=pt+1;
+              }
+
+              //市场比较法中，看看土地使用年期修正中，r的取值是否有过说明
+              if(dur_jus_cer==0 && market==1)
+              {
+                res+="(" + pt + ")" + "市场比较法中，看看土地使用年期修正中，r的取值是否有过说明。" + "\n";
+                pt=pt+1;
+              }
+              
+              //未说明地价指数的来源依据(如果在市场比较法中运用了地价指数的话)
+              if(land_index_accord==0 && market==1 && is_land_index==1)
+              {
+                res+="(" + pt + ")" + "市场比较法中，未说明地价指数的来源依据。" + "\n";
+                pt=pt+1;
+                if(material_index==1)
+                {
+                  res+="(" + "*" + ")" + "如何采用了物价指数来作为地价指数的话，请一定记得要说明依据。" + "\n";
+                }
+              }
+
+              //未说明由3个比准价格确定土地单位面积地价的方法及原因
+              if(compare_price_accord==0 && market==1)
+              {
+                res+="(" + pt + ")" + "市场比较法中，未说明由3个比准价格确定土地单位面积地价的方法及原因。" + "\n";
                 pt=pt+1;
               }
               
@@ -930,6 +2082,21 @@
                   land_result_error=1;
                 }
 
+                //看看地价确定的项目中，如果描述中说的是算术平均数，实际的计算是否采用的是加权平均数，如果是的话，则报错
+                if(price_final_res.indexOf("算术平均数")>=0)
+                {
+                  if(price_final_res.indexOf("单位面积地价＝")>=0 && (price_final_res.indexOf("×0．5")>=0||price_final_res.indexOf("×0.5")>=0))
+                  {
+                    land_price_uniformity=1;
+                  }
+                }
+
+                //如果在地价的最后确定中，没有使用算术平均数的话，就默认是正确的
+                if(price_final_res.indexOf("算术平均数")<0)
+                {
+                  land_price_uniformity=1;
+                }
+
               //在地价的确定中，不能以两种估价方法的相差结果不大或者较大作为选用加权平均法的依据
               if(land_result_error==1)
               {
@@ -937,10 +2104,10 @@
                 pt=pt+1;
               }
 
-              //在地价的确定中，看看地价大写了没有
-              if(capital_letter_error==0)
+              //在基准地价的确定中，看看地价大写了没有
+              if(capital_letter_error==0 && coef==1)
               {
-                res+="(" + pt + ")" + "估价结果中，总地价没有大写。" + "\n";
+                res+="(" + pt + ")" + "基准地价的确定中，总地价没有大写。" + "\n";
                 pt=pt+1;
               }
 
@@ -951,11 +2118,34 @@
                 pt=pt+1;
               }
 
+              //在地价的确定中，看看土地面积，单位面积地价，总地价，楼面地价这四项有哪一项缺漏了
+              if(land_res_full==0)
+              {
+                res+="(" + pt + ")" + "在地价的确定中，看看土地面积，单位面积地价，总地价，楼面地价这四项有哪一项缺漏了(一般楼面地价容易缺漏)。" + "\n";
+                pt=pt+1;
+              }
+
+              //地价的确定中，描述是采用两种方法估价结果的算术平均数，实际计算则采用的是加权平均数
+              if(land_price_uniformity==0)
+              {
+                res+="(" + pt + ")" + "在地价的确定中，描述是采用两种方法估价结果的算术平均数，实际计算则采用的是加权平均数。" + "\n";
+                pt=pt+1;
+              }
+
+              //在估价对象土地权利状况的描述中，要记得判断土地使用期限不应该超过该土地用途下的法定最高年限
+              res+="(" + "*" + ")" + "在估价对象土地权利状况的描述中，要记得判断土地使用期限不应该超过该土地用途下的法定最高年限。" + "\n";
+
               //请注意,在地价的确定中，两种方法的权重和一定要等于1.0
               res+="(" + "*" + ")" + "请注意,在地价的确定中，两种方法的权重和一定要等于1.0。" + "\n";
 
+              //总地价计算的时候要注意，应将单价乘以土地面积，而不是建筑面积
+              res+="(" + "*" + ")" + "总地价计算的时候要注意，应将单价乘以土地面积，而不是建筑面积。" + "\n";
+
+              //报告的文字描述应该规范，不应该出现“可比实例”、“房屋占地地价”等不规范提法，将许多基本情况不在“估价对象描述”中介绍，而在收益还原法中作较，这种主次不分，将估价对象的情况放在具体的估价方法中（比如在收益还原法中描述房屋的耐用年限，完损情况，成新率等等），这些行为都是不对的
+              res+="(" + "*" + ")" + "报告的文字描述应该规范，不应该出现'可比实例'、'房屋占地地价'等不规范提法，将许多基本情况不在'估价对象描述'中介绍，而在收益还原法中作较，这种主次不分，将估价对象的情况放在具体的估价方法中（比如在收益还原法中描述房屋的耐用年限，完损情况，成新率等等），这些行为都是不对的。" + "\n";
+
               //最后请大家留意土地估价报告中，附件的错误
-              if(flag==3)
+              if(flag==3 && appendix.indexOf("略")<0)
               {
                 if(land_use_ver==0)
                 {
@@ -967,7 +2157,26 @@
                   res+="(" + pt + ")" + "缺少估价对象的照片资料。" + "\n";
                   pt=pt+1;
                 }
+                //缺少估价对象房屋产权证
+                if(income_house==1 && object_house_cer==0)
+                {
+                  res+="(" + pt + ")" + "缺少估价对象房屋产权证。" + "\n";
+                  pt=pt+1;
+                }
+                //缺少估价对象位置示意图
+                if(object_location_photo==0)
+                {
+                  res+="(" + pt + ")" + "缺少估价对象位置示意图。" + "\n";
+                  pt=pt+1;
+                }
+                //缺少估价机构工商营业执照
+                if(agent_business_cer==0)
+                {
+                  res+="(" + pt + ")" + "缺少估价机构工商营业执照。" + "\n";
+                  pt=pt+1;
+                }
               }
+
 
 
 
@@ -982,31 +2191,48 @@
         {
           //提取有效信息
           var j=ii;
-          if(arr[j].indexOf("、")>=0 || arr[j].indexOf(".")>=0) j=j+1;
+          if((arr[j].indexOf("、")>=0 || arr[j].indexOf(".")>=0) &&  arr[j].indexOf(":")<0 && arr[j].indexOf("：")<0) j=j+1;
           var msg;
           msg="";
-          if(arr[j].indexOf("：")>=0) 
+          if(arr[j].indexOf("：")>=0 || arr[j].indexOf(":")>=0) 
           {
             msg=arr[j];
           }
-          while(arr[j].indexOf(sp)<0 && arr[j].indexOf("第二部分")<0 && arr[j].indexOf("第三部分")<0 && arr[j].indexOf("第四部分")<0)
+            
+          while(arr[j].indexOf(sp)<0 && arr[j].indexOf(sp)<0 && arr[j].indexOf("第二部分")<0 && arr[j].indexOf("第三部分")<0 && arr[j].indexOf("第四部分")<0)
           {
-             //要查看那一行是不是空白的
-             
+             //要查看那一行是不是空白的--这里有一个冒号和顿号混用的BUG，期待以后解决
+             if(arr[j].indexOf("、")>=0 && (arr[j].indexOf("：")>=0 || arr[j].indexOf(":")>=0) && msg.length<50) break;
              if(arr[j].length>0)
              {
                msg += arr[j];
               }
               j++;
           }
-          if(sp=="：") 
+          //alert(msg);
+          if(sp=="："||sp==":"||msg.indexOf("：")>=0||msg.indexOf(":")>=0) 
           {
-            msg=msg.slice(str.indexOf(sp)+1);
+            //顿号和冒号混合存在的情况，有时候需要保留冒号前面的内容，有时候不需要，所以自己暂时用标题字和一段字来进行区分
+            //实在是一种无可奈何的选择
+            if(msg.length<50)
+            {
+              msg=msg.slice(str.indexOf(sp)+1);
+              //alert(msg);
+              if(msg.indexOf("：")>=0||msg.indexOf(":")>=0)
+              {
+                var k;
+                if(msg.indexOf("：")>=0) k=msg.indexOf("：")+1;
+                if(msg.indexOf(":")>=0) k=msg.indexOf(":")+1;
+                msg=msg.slice(k);
+                //alert(msg);
+              }
+            }  
           }
           if(msg.indexOf("。")>=0) 
           {
             msg = msg.substr(0, msg.length - 1); 
           }
+          //if(str.indexOf("、估价结果")>=0) alert(msg);
           return msg;
   }
   
